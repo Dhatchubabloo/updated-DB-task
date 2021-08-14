@@ -114,16 +114,20 @@ public class QueryHandler {
 	static PreparedStatement stmt1=null;
 
 	public int accountInsertion(AccountInfo accountIn){
-		int rows =0;
+		int account_no =0;
 		try {
 			account_connection = settings();
 			String sql = "insert into account_details(account_no,customer_id,salary)values(?,?,?)";
-			stmt1 = account_connection.prepareStatement(sql);
+			stmt1 = account_connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 			System.out.println();
 				stmt1.setInt(1, accountIn.getAccount_no());
 				stmt1.setInt(2, accountIn.getCustomer_id());
 				stmt1.setInt(3, accountIn.getSalary());
-				rows = stmt1.executeUpdate();
+				stmt1.executeUpdate();
+				ResultSet set = stmt1.getGeneratedKeys();
+				set.next();
+				account_no = set.getInt(1);
+			System.out.println(account_no);
 		}catch(Exception e) {
 			System.out.println(e);
 		}
@@ -134,7 +138,7 @@ public class QueryHandler {
 				e.printStackTrace();
 			}
 		}
-		return rows;
+		return account_no;
 	}
 
 	public HashMap<Integer,HashMap<Integer, AccountInfo>> accountRetrival() throws SQLException {

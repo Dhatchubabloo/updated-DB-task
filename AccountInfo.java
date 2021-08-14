@@ -24,7 +24,7 @@ public class AccountInfo {
 	}
 	public String toString()
 	{
-		return "Account_no:"+account_no+"  |  "+"Salary:"+salary;
+		return "Account_no:"+account_no+"  |  "+"Balance:"+salary;
 	}
 	
 }

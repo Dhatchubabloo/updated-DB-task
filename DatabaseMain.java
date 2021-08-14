@@ -40,10 +40,8 @@ public class DatabaseMain {
 					inputList.add(customerObject);
 					scan.nextLine();
 					System.out.println("Account details for customer" + i);
-					System.out.println("Enter Account number");
 					AccountInfo accountObject = new AccountInfo();
-					accountObject.setAccount_no(scan.nextInt());
-					System.out.println("Enter Salary");
+					System.out.println("Enter Balance");
 					accountObject.setSalary(scan.nextInt());
 					inputList.add(accountObject);
 					scan.nextLine();

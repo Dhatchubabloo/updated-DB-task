@@ -36,23 +36,14 @@ public class Helper {
             CustomerInfo customerObject = (CustomerInfo) inputList.get(j);
             customerObject.setCustomerId(idList.get(i));
             MapHandler.OBJECT.customerMapper(customerObject); j+=2;
-//            CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
-//            System.out.println(obj+"details was inserted succesfully;");
             AccountInfo accountObject = (AccountInfo) inputList.get(k);
             accountObject.setCustomer_id(idList.get(i));
-            customerToken.accountInsertion(accountObject);
+            int account_no = customerToken.accountInsertion(accountObject);
+            accountObject.setAccount_no(account_no);
             MapHandler.OBJECT.accountMapper(accountObject);k+=2;
-//            HashMap<Integer, AccountInfo> map =MapHandler.OBJECT.retriveAccountDetails().get(idList.get(i));
-//            AccountInfo obj = map.get(accountObject.getAccount_no());
-//            System.out.println(obj+"details was inserted succesfully;");
             CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
             System.out.println(obj.getName()+" details was inserted succesfully;");
         }
-
-//        for(int i=idList.size()/2;i< idList.size();i++){
-//
-//        }
-
         try{
             customerToken.customerRetrival();
         }catch(Exception e){
