@@ -31,28 +31,27 @@ public class Helper {
     public static void caseNewUser(ArrayList<Object> inputList){
         QueryHandler customerToken = new QueryHandler();
         ArrayList<Integer> idList = customerToken.customerInsertion(inputList);
-        int j=0;
+        int j=0,k=1;
         for(int i=idList.size()/2;i< idList.size();i++){
             CustomerInfo customerObject = (CustomerInfo) inputList.get(j);
-            customerObject.setCustomerId(idList.get(i));//**************
-            MapHandler.OBJECT.customerMapper(customerObject);
+            customerObject.setCustomerId(idList.get(i));
+            MapHandler.OBJECT.customerMapper(customerObject); j+=2;
+//            CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
+//            System.out.println(obj+"details was inserted succesfully;");
+            AccountInfo accountObject = (AccountInfo) inputList.get(k);
+            accountObject.setCustomer_id(idList.get(i));
+            customerToken.accountInsertion(accountObject);
+            MapHandler.OBJECT.accountMapper(accountObject);k+=2;
+//            HashMap<Integer, AccountInfo> map =MapHandler.OBJECT.retriveAccountDetails().get(idList.get(i));
+//            AccountInfo obj = map.get(accountObject.getAccount_no());
+//            System.out.println(obj+"details was inserted succesfully;");
             CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
-            System.out.println(obj+"details was inserted succesfully;");
-            j+=2;
+            System.out.println(obj.getName()+" details was inserted succesfully;");
         }
-        int k=0;
-        int totalAccountRows =0;
-        for(int i=1;i<inputList.size();i+=2){
-            AccountInfo accountObject = (AccountInfo) inputList.get(i);
-            accountObject.setCustomer_id(idList.get(k));//******************
-            int rows = customerToken.accountInsertion(accountObject);
-            totalAccountRows+=rows;
-            if(totalAccountRows==inputList.size()/2){
-                System.out.println("account details are inserted Succesfully");
-            }
-            MapHandler.OBJECT.accountMapper(accountObject);
-            k++;
-        }
+
+//        for(int i=idList.size()/2;i< idList.size();i++){
+//
+//        }
 
         try{
             customerToken.customerRetrival();

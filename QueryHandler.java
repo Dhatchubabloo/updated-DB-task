@@ -8,7 +8,7 @@ public class QueryHandler {
 	
 	String url = "jdbc:mysql://localhost:3306/userdb";
 	String username = "root";
-	String password = "Root@123";
+	String password = "password";
 	Connection connection = null;
 
 	public Connection settings() {
