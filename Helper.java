@@ -28,21 +28,24 @@ public class Helper {
     }
 
 
-    public static void caseNewUser(ArrayList<Object> inputList){
+    public static void caseNewUser(ArrayList<Object> inputList,int size){
         QueryHandler customerToken = new QueryHandler();
         ArrayList<Integer> idList = customerToken.customerInsertion(inputList);
-        int j=0,k=1;
-        for(int i=idList.size()/2;i< idList.size();i++){
-            CustomerInfo customerObject = (CustomerInfo) inputList.get(j);
-            customerObject.setCustomerId(idList.get(i));
-            MapHandler.OBJECT.customerMapper(customerObject); j+=2;
-            AccountInfo accountObject = (AccountInfo) inputList.get(k);
-            accountObject.setCustomer_id(idList.get(i));
-            int account_no = customerToken.accountInsertion(accountObject);
-            accountObject.setAccount_no(account_no);
-            MapHandler.OBJECT.accountMapper(accountObject);k+=2;
-            CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
-            System.out.println(obj.getName()+" details was inserted succesfully;");
+        if(inputList.size()==idList.size()) {
+            dataInsertion(inputList,size,idList);
+        }
+        else{
+            int s=0;
+            for(int i=0;i< idList.size();i++){
+                if(idList.get(i)<0){
+                    s =(i*2)-s;
+                    CustomerInfo details = (CustomerInfo)inputList.get(s);
+                    System.out.println(details.getName() + " details was not inserted");
+                    inputList.remove(s);
+                    inputList.remove(s);
+                }
+            }
+            dataInsertion(inputList,size,idList);
         }
         try{
             customerToken.customerRetrival();
@@ -50,7 +53,25 @@ public class Helper {
             e.printStackTrace();
         }
     }
+    public static void dataInsertion(ArrayList<Object> inputList,int size,ArrayList<Integer> idList){
+        QueryHandler accountToken = new QueryHandler();
+        int j=0,k=1;
+        for (int i =size;i < idList.size(); i++) {
+            CustomerInfo customerObject = (CustomerInfo) inputList.get(j);
+            customerObject.setCustomerId(idList.get(i));
+            MapHandler.OBJECT.customerMapper(customerObject);
+            j += 2;
+            AccountInfo accountObject = (AccountInfo) inputList.get(k);
+            accountObject.setCustomer_id(idList.get(i));
+            int account_no = accountToken.accountInsertion(accountObject);
+            accountObject.setAccount_no(account_no);
+            MapHandler.OBJECT.accountMapper(accountObject);
+            k += 2;
+            CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
+            System.out.println(obj.getName() + " details was inserted succesfully;");
+        }
 
+    }
     public static void caseExistingUser(AccountInfo in) {
         QueryHandler db = new QueryHandler();
         db.accountInsertion(in);

@@ -44,7 +44,6 @@ public class QueryHandler {
 			while(rs.next()){
 				mainList.add(rs.getInt(1));
 			}
-			System.out.println(mainList);
 		}catch(BatchUpdateException e){
 			successRate= e.getUpdateCounts();
 			for(int i=0;i< successRate.length;i++) {
@@ -102,11 +101,8 @@ public class QueryHandler {
 			catch(Exception e){
 
 			}
-
 		}
-
-
-			return entry;
+		return entry;
 	}
 
 
@@ -127,7 +123,6 @@ public class QueryHandler {
 				ResultSet set = stmt1.getGeneratedKeys();
 				set.next();
 				account_no = set.getInt(1);
-			System.out.println(account_no);
 		}catch(Exception e) {
 			System.out.println(e);
 		}

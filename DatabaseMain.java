@@ -46,7 +46,7 @@ public class DatabaseMain {
 					inputList.add(accountObject);
 					scan.nextLine();
 				}
-				Helper.caseNewUser(inputList);
+				Helper.caseNewUser(inputList,count);
 				execution();
 				break;
 
