@@ -1,14 +1,12 @@
 package javaDatabaseDemo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.math.BigDecimal;
+import java.util.*;
 
 public class DatabaseMain {
 	static Scanner scan = new Scanner(System.in);
-	static HashMap<Integer, CustomerInfo>existingCustomerMap=null;
 	public static void main(String[] args){
-		existingCustomerMap=Helper.customerDataStore();
+		Helper.customerDataStore();
 		Helper.accountDataStore();
 		DatabaseMain db = new DatabaseMain();
 		db.execution();
@@ -19,12 +17,12 @@ public class DatabaseMain {
 		System.out.println("1.Enroll both customer details and account details");
 		System.out.println("2.Enroll & Check account details");
 		System.out.println("3.Check account details");
-		System.out.println("4.Exit");
+		System.out.println("4.delete the details");
+		System.out.println("5.Exit");
 		System.out.println("Enter your choice");
 		int choice = scan.nextInt();
 
 		switch (choice) {
-
 			case 1:
 				ArrayList<Object> inputList = new ArrayList();
 				System.out.println("Enter number of customers do you want to enroll");
@@ -42,11 +40,15 @@ public class DatabaseMain {
 					System.out.println("Account details for customer" + i);
 					AccountInfo accountObject = new AccountInfo();
 					System.out.println("Enter Balance");
-					accountObject.setSalary(scan.nextInt());
+					accountObject.setSalary(scan.nextBigDecimal());
 					inputList.add(accountObject);
 					scan.nextLine();
 				}
-				Helper.caseNewUser(inputList,count);
+				HashMap<String,String>insertionStatus = Helper.caseNewUser(inputList,count);
+				System.out.println("Insertion status:");
+                for (Map.Entry<String,String> entry : insertionStatus.entrySet())
+                    System.out.println( entry.getKey() +
+                            " = " + entry.getValue());
 				execution();
 				break;
 
@@ -55,14 +57,18 @@ public class DatabaseMain {
 				System.out.println("Account details for existing customer");
 				System.out.println("Enter customer id");
 				int id = scan.nextInt();
-				in.setCustomer_id(id);
-				System.out.println("Enter Account number");
-				int account_no = scan.nextInt();
-				in.setAccount_no(account_no);
-				System.out.println("Enter Salary");
-				int salary = scan.nextInt();
-				in.setSalary(salary);
-				Helper.caseExistingUser(in);
+				if(Helper.helperThree(id)) {
+					in.setCustomer_id(id);
+					System.out.println("Enter balance");
+					BigDecimal salary = scan.nextBigDecimal();
+					in.setSalary(salary);
+					ArrayList<Integer> accountStatus = Helper.caseExistingUser(in);
+					if (accountStatus.get(0) >= 0)
+						System.out.println("account insertion succcessful");
+					else
+						System.out.println("Account insertion Failed");
+				}else
+					System.out.println("invalid customer_id");
 				execution();
 				break;
 
@@ -80,19 +86,55 @@ public class DatabaseMain {
 						for (AccountInfo ac : temp.values()) {
 							System.out.println(ac);
 						}
+							System.out.println("--------------------------------------");
 						break;
 						case 2:
 							System.out.println("Enter valid Account Number");
 							int mainAccount_no = scan.nextInt();
 							System.out.println(temp.get(mainAccount_no));
+
+						default:
+							System.out.println("invalid option");
+							execution();
 					}
 				}else {
 					System.out.println("invalid Customer id");
 				}
 				execution();
 				break;
-
 			case 4:
+				System.out.println("1.Entire customer_id deletion");
+				System.out.println("2.particular account details deletion");
+				int number = scan.nextInt();
+				switch (number) {
+					case 1:
+						System.out.println("Enter customer_id");
+						int customer_id = scan.nextInt();
+						int status=Helper.entireDeletion(customer_id);
+						if(status==1)
+							System.out.println("Deleted Successfully;");
+						else
+							System.out.println("Deletion Failed....." +
+									"invalid Customer_id");
+						execution();
+						break;
+
+					case 2:
+						System.out.println("Enter customer_id");
+						int value = scan.nextInt();
+						System.out.println("Enter account_no");
+						int account_no = scan.nextInt();
+						int status1 = Helper.particularAccountDeletion(value,account_no);
+						if(status1==1)
+							System.out.println("Deleted Successfully;");
+						else
+							System.out.println("Deletion Failed....." +
+									"invalid Account_no");
+						execution();
+				}
+				break;
+
+			case 5:
 				if(Helper.dbClose())
 					System.out.println("your Connection was closed successfully");
 				else
@@ -100,7 +142,8 @@ public class DatabaseMain {
 				break;
 
 			default:
-				System.out.println("ERROR!.........Enter valid choice");
+				System.out.println("OOPS!.........Enter valid choice");
+				execution();
 		}
 	}
 }

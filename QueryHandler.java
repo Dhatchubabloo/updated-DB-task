@@ -1,12 +1,13 @@
 package javaDatabaseDemo;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class QueryHandler {
 	
-	String url = "jdbc:mysql://localhost:3306/userdb";
+	String url = "jdbc:mysql://localhost:3306/masterdb";
 	String username = "root";
 	String password = "password";
 	Connection connection = null;
@@ -54,7 +55,6 @@ public class QueryHandler {
 				while(rs.next()){
 					mainList.add(rs.getInt(1));
 				}
-				System.out.println(mainList);
 			}catch (Exception ex){
 				e.printStackTrace();
 			}
@@ -109,20 +109,23 @@ public class QueryHandler {
 	static Connection account_connection = null;
 	static PreparedStatement stmt1=null;
 
-	public int accountInsertion(AccountInfo accountIn){
+	public ArrayList<Integer> accountInsertion(AccountInfo accountIn){
 		int account_no =0;
+		ArrayList<Integer>accountIdList = new ArrayList<>();
 		try {
 			account_connection = settings();
-			String sql = "insert into account_details(account_no,customer_id,salary)values(?,?,?)";
+			String sql = "insert into account_details(account_no,customer_id,balance)values(?,?,?)";
 			stmt1 = account_connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 			System.out.println();
 				stmt1.setInt(1, accountIn.getAccount_no());
 				stmt1.setInt(2, accountIn.getCustomer_id());
-				stmt1.setInt(3, accountIn.getSalary());
-				stmt1.executeUpdate();
+				stmt1.setBigDecimal(3, accountIn.getSalary());
+				int id = stmt1.executeUpdate();
+				accountIdList.add(id);
 				ResultSet set = stmt1.getGeneratedKeys();
 				set.next();
 				account_no = set.getInt(1);
+				accountIdList.add(account_no);
 		}catch(Exception e) {
 			System.out.println(e);
 		}
@@ -133,7 +136,7 @@ public class QueryHandler {
 				e.printStackTrace();
 			}
 		}
-		return account_no;
+		return accountIdList;
 	}
 
 	public HashMap<Integer,HashMap<Integer, AccountInfo>> accountRetrival() throws SQLException {
@@ -145,7 +148,7 @@ public class QueryHandler {
 		try {
 			account_connection = handler.settings();
 			stmt = account_connection.createStatement();
-			String sql1 = "select customer_id,account_no,salary from account_details";
+			String sql1 = "select customer_id,account_no,balance from account_details";
 			account_rs = stmt.executeQuery(sql1);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -153,7 +156,7 @@ public class QueryHandler {
 		while(account_rs.next()) {
 			Integer customer_id = account_rs.getInt("customer_id");
 			Integer account_no = account_rs.getInt("account_no");
-			Integer salary = account_rs.getInt("salary");
+			BigDecimal salary = account_rs.getBigDecimal("balance");
 			AccountInfo accounts = new AccountInfo();
 			accounts.setCustomer_id(customer_id);
 			accounts.setAccount_no(account_no);

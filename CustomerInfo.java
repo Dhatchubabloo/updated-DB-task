@@ -23,6 +23,8 @@ public class CustomerInfo {
 		return customerId;
 	}
 	public String toString(){
-		return "Customer Id :"+customerId+" Name :"+name+" City :"+city;
+		return "------------------------------------------------------"+
+				"\n"+"Customer Id :"+customerId+" Name :"+name+" City :"+city+
+				"\n"+"------------------------------------------------------";
 	}
 }

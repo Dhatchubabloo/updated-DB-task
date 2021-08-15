@@ -1,9 +1,11 @@
 package javaDatabaseDemo;
 
+import java.math.BigDecimal;
+
 public class AccountInfo {
 	private int customer_id;
 	private int account_no;
-	private int salary;
+	private BigDecimal salary;
 	public int getCustomer_id() {
 		return customer_id;
 	}
@@ -16,15 +18,16 @@ public class AccountInfo {
 	public void setAccount_no(int account_no) {
 		this.account_no = account_no;
 	}
-	public int getSalary() {
+	public BigDecimal getSalary() {
 		return salary;
 	}
-	public void setSalary(int salary) {
+	public void setSalary(BigDecimal salary) {
 		this.salary = salary;
 	}
 	public String toString()
 	{
-		return "Account_no:"+account_no+"  |  "+"Balance:"+salary;
+		return "--------------------------------------"+"\n"
+				+"Account_no:"+account_no+"  |  "+"Balance:"+salary;
 	}
-	
+
 }
