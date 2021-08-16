@@ -9,7 +9,7 @@ public class QueryHandler {
 	
 	String url = "jdbc:mysql://localhost:3306/masterdb";
 	String username = "root";
-	String password = "password";
+	String password = "Root@123";
 	Connection connection = null;
 
 	public Connection settings() {
@@ -114,12 +114,11 @@ public class QueryHandler {
 		ArrayList<Integer>accountIdList = new ArrayList<>();
 		try {
 			account_connection = settings();
-			String sql = "insert into account_details(account_no,customer_id,balance)values(?,?,?)";
+			String sql = "insert into account_details(customer_id,balance)values(?,?)";
 			stmt1 = account_connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 			System.out.println();
-				stmt1.setInt(1, accountIn.getAccount_no());
-				stmt1.setInt(2, accountIn.getCustomer_id());
-				stmt1.setBigDecimal(3, accountIn.getSalary());
+				stmt1.setInt(1, accountIn.getCustomer_id());
+				stmt1.setBigDecimal(2, accountIn.getBalance());
 				int id = stmt1.executeUpdate();
 				accountIdList.add(id);
 				ResultSet set = stmt1.getGeneratedKeys();
@@ -148,7 +147,7 @@ public class QueryHandler {
 		try {
 			account_connection = handler.settings();
 			stmt = account_connection.createStatement();
-			String sql1 = "select customer_id,account_no,balance from account_details";
+			String sql1 = "select customer_id,account_no,balance,accountStatus from account_details";
 			account_rs = stmt.executeQuery(sql1);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -157,10 +156,12 @@ public class QueryHandler {
 			Integer customer_id = account_rs.getInt("customer_id");
 			Integer account_no = account_rs.getInt("account_no");
 			BigDecimal salary = account_rs.getBigDecimal("balance");
+			String status = account_rs.getString("accountStatus");
 			AccountInfo accounts = new AccountInfo();
 			accounts.setCustomer_id(customer_id);
 			accounts.setAccount_no(account_no);
-			accounts.setSalary(salary);
+			accounts.setBalance(salary);
+			accounts.setStatus(status);
 			HashMap<Integer, AccountInfo>inner  = outer.getOrDefault(customer_id,new HashMap<>());
 			inner.put(account_no,accounts);
 			outer.put(customer_id, inner);

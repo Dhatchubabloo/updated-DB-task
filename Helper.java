@@ -1,7 +1,10 @@
 package javaDatabaseDemo;
 
+import javax.swing.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 public class Helper {
 
@@ -66,47 +69,90 @@ public class Helper {
         for (int i =size;i < idList.size(); i++) {
             CustomerInfo customerObject = (CustomerInfo) inputList.get(j);
             customerObject.setCustomerId(idList.get(i));
-            MapHandler.OBJECT.customerMapper(customerObject);
             j += 2;
             AccountInfo accountObject = (AccountInfo) inputList.get(k);
             accountObject.setCustomer_id(idList.get(i));
             ArrayList<Integer> account_no = accountToken.accountInsertion(accountObject);
             accountObject.setAccount_no(account_no.get(1));
-            if(account_no.get(0)>0)
+            if(account_no.get(0)>0) {
+                MapHandler.OBJECT.customerMapper(customerObject);
                 MapHandler.OBJECT.accountMapper(accountObject);
                 k += 2;
                 CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
                 insertionStatus.put(obj.getName(), "Success");
+            }
+            else {
+                CustomerInfo obj = MapHandler.OBJECT.retriveCustomerDetails().get(idList.get(i));
+                insertionStatus.put(obj.getName(), "Fail");
+                int customer_id = customerObject.getCustomerId();
+                QueryHandler1 db = new QueryHandler1();
+                db.customerDeletion(customer_id);
+            }
         }
+        TreeMap<String,String>map = new TreeMap<>(insertionStatus);
     }
     public static ArrayList<Integer> caseExistingUser(AccountInfo in) {
         QueryHandler db = new QueryHandler();
         ArrayList<Integer>accountIdList = db.accountInsertion(in);
-        in.setAccount_no(accountIdList.get(1));
-        MapHandler.OBJECT.accountMapper(in);
+            in.setAccount_no(accountIdList.get(1));
+            MapHandler.OBJECT.accountMapper(in);
         return accountIdList;
     }
     public static int entireDeletion(int id){
         QueryHandler1 db = new QueryHandler1();
-        int status = db.customerDeletion(id);
-        HashMap<Integer, CustomerInfo>customerMap = MapHandler.OBJECT.retriveCustomerDetails();
-        customerMap.remove(id);
-        HashMap<Integer,HashMap<Integer, AccountInfo>>accountMap =MapHandler.OBJECT.retriveAccountDetails();
-        accountMap.remove(id);
+        int status = db.customerUpdation(id);
+        MapHandler.OBJECT.customerDeletion(id);
+        MapHandler.OBJECT.accountDeletion(id);
         return status;
     }
     public static int particularAccountDeletion(int id,int account_no){
         QueryHandler1 db = new QueryHandler1();
-        int status = db.accountDeletion(account_no);
+        int status = db.accountUpdation(account_no);
         HashMap<Integer,HashMap<Integer, AccountInfo>>accountMap =MapHandler.OBJECT.retriveAccountDetails();
         HashMap<Integer, AccountInfo>inner = accountMap.get(id);
         inner.remove(account_no);
         return status;
     }
-    public static boolean helperThree(int id) {
+    public static boolean amountWithdrawl(int customer_id,int account_no,BigDecimal amount){
+        BigDecimal balance =getBalance(customer_id,account_no);
+        int rate =balance.compareTo(amount);
+        if(rate>0) {
+            BigDecimal totalAmount = balance.subtract(amount);
+            QueryHandler1.withdrawl(customer_id, account_no, totalAmount);
+            return true;
+        }
+        else
+            return false;
+    }
+    public static boolean amountDeposite(int customer_id,int account_no,BigDecimal amount){
+        BigDecimal balance =getBalance(customer_id,account_no);
+        BigDecimal totalAmount = balance.add(amount);
+        int rate = QueryHandler1.deposite(customer_id, account_no, totalAmount);
+        if(rate>0){
+            return true;
+        }
+        else
+            return false;
+    }
+    public static BigDecimal getBalance(int customer_id,int account_no){
+        HashMap<Integer,HashMap<Integer, AccountInfo>>finalAccountMap=MapHandler.OBJECT.retriveAccountDetails();
+        HashMap<Integer, AccountInfo> temp = finalAccountMap.get(customer_id);
+        AccountInfo info = temp.get(account_no);
+        BigDecimal balance = info.getBalance();
+        return balance;
+    }
+    public static boolean idCheck(int id) {
         if(MapHandler.OBJECT.retriveCustomerDetails().containsKey(id)){
             return true;
         }
+        else
+            return false;
+    }
+    public static boolean accountCheck(int id,int account_no){
+        HashMap<Integer,HashMap<Integer, AccountInfo>>finalAccountMap=MapHandler.OBJECT.retriveAccountDetails();
+        HashMap<Integer, AccountInfo> temp = finalAccountMap.get(id);
+        if(temp.containsKey(account_no))
+            return true;
         else
             return false;
     }

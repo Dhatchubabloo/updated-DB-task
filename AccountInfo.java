@@ -5,7 +5,11 @@ import java.math.BigDecimal;
 public class AccountInfo {
 	private int customer_id;
 	private int account_no;
-	private BigDecimal salary;
+	private BigDecimal balance;
+	private String status;
+	public String getStatus(){
+		return status;
+	}
 	public int getCustomer_id() {
 		return customer_id;
 	}
@@ -18,16 +22,19 @@ public class AccountInfo {
 	public void setAccount_no(int account_no) {
 		this.account_no = account_no;
 	}
-	public BigDecimal getSalary() {
-		return salary;
+	public BigDecimal getBalance() {
+		return balance;
 	}
-	public void setSalary(BigDecimal salary) {
-		this.salary = salary;
+	public void setBalance(BigDecimal balance) {
+		this.balance = balance;
+	}
+	public void setStatus(String status){
+		this.status = status;
 	}
 	public String toString()
 	{
 		return "--------------------------------------"+"\n"
-				+"Account_no:"+account_no+"  |  "+"Balance:"+salary;
+				+"Account_no:"+account_no+"  |  "+"Balance:"+ balance+"Status:"+"  |  "+status;
 	}
 
 }

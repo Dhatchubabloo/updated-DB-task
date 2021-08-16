@@ -34,5 +34,11 @@ public enum MapHandler {
     public  HashMap<Integer,HashMap<Integer, AccountInfo>> retriveAccountDetails() {
         return accountDetailsMap;
     }
+    public void customerDeletion(int id){
+        customerDetailsMap.remove(id);
+    }
+    public void accountDeletion(int id){
+        accountDetailsMap.remove(id);
+    }
 
 }
