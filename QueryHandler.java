@@ -50,6 +50,7 @@ public class QueryHandler {
 			for(int i=0;i< successRate.length;i++) {
 				mainList.add(successRate[i]);
 			}
+			System.out.println(mainList);
 			try {
 				rs = stmt1.getGeneratedKeys();
 				while(rs.next()){
@@ -110,23 +111,40 @@ public class QueryHandler {
 	static PreparedStatement stmt1=null;
 
 	public ArrayList<Integer> accountInsertion(AccountInfo accountIn){
-		int account_no =0;
 		ArrayList<Integer>accountIdList = new ArrayList<>();
+		int accountRate[] = {};
 		try {
 			account_connection = settings();
-			String sql = "insert into account_details(customer_id,balance)values(?,?)";
+			String sql = "insert into account_details(customer_id,balance,branch)values(?,?,?)";
 			stmt1 = account_connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 			System.out.println();
 				stmt1.setInt(1, accountIn.getCustomer_id());
 				stmt1.setBigDecimal(2, accountIn.getBalance());
-				int id = stmt1.executeUpdate();
-				accountIdList.add(id);
+				stmt1.setString(3,accountIn.getBranch());
+				stmt1.addBatch();
+				accountRate =stmt1.executeBatch();
+				for(int i:accountRate)
+					accountIdList.add(i);
 				ResultSet set = stmt1.getGeneratedKeys();
 				set.next();
-				account_no = set.getInt(1);
-				accountIdList.add(account_no);
-		}catch(Exception e) {
+				accountIdList.add(set.getInt(1));
+
+		}catch(BatchUpdateException e) {
 			System.out.println(e);
+			accountRate = e.getUpdateCounts();
+			for(int i:accountRate)
+				accountIdList.add(i);
+			try {
+				ResultSet set = stmt1.getGeneratedKeys();
+				set.next();
+				accountIdList.add(set.getInt(1));
+				System.out.println("list-------------"+accountIdList);
+			}catch(Exception ex){
+				System.out.println(e);
+			}
+		}
+		catch (Exception ex){
+			System.out.println(ex);
 		}
 		finally {
 			try {
@@ -147,7 +165,7 @@ public class QueryHandler {
 		try {
 			account_connection = handler.settings();
 			stmt = account_connection.createStatement();
-			String sql1 = "select customer_id,account_no,balance,accountStatus from account_details";
+			String sql1 = "select customer_id,account_no,balance,account_status from account_details";
 			account_rs = stmt.executeQuery(sql1);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -156,7 +174,7 @@ public class QueryHandler {
 			Integer customer_id = account_rs.getInt("customer_id");
 			Integer account_no = account_rs.getInt("account_no");
 			BigDecimal salary = account_rs.getBigDecimal("balance");
-			String status = account_rs.getString("accountStatus");
+			String status = account_rs.getString("account_status");
 			AccountInfo accounts = new AccountInfo();
 			accounts.setCustomer_id(customer_id);
 			accounts.setAccount_no(account_no);

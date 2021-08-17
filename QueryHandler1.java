@@ -3,6 +3,8 @@ package javaDatabaseDemo;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class QueryHandler1 {
     static QueryHandler db = new QueryHandler();
@@ -24,10 +26,13 @@ public class QueryHandler1 {
     public int customerUpdation(int customer_id){
         int status=0;
         try{
-            sql = "update account_details set accountStatus='Deactivate' where customer_id=?";
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1,customer_id);
-             status = stmt.executeUpdate();
+            sql = "update account_details set account_status='Deactivate' where customer_id=?";
+            for(int i=0;i<2;i++) {
+                stmt = conn.prepareStatement(sql);
+                stmt.setInt(1, customer_id);
+                status = stmt.executeUpdate();
+                sql = "update customer_details set customer_status='Deactivate' where customer_id=?";
+            }
         }catch(Exception e){
             System.out.println(e);
         }
@@ -45,32 +50,52 @@ public class QueryHandler1 {
         }
         return status;
     }
-    public static int withdrawl(int customer_id, int account_no, BigDecimal amount){
+    public static int withdrawl(TransactionInfo info,BigDecimal amount){
         int value=0;
         try {
             sql = "update account_details set balance = ? where customer_id=? and account_no=?";
             stmt = conn.prepareStatement(sql);
             stmt.setBigDecimal(1,amount);
-            stmt.setInt(2,customer_id);
-            stmt.setInt(3,account_no);
+            stmt.setInt(2,info.getCustomer_id());
+            stmt.setInt(3,info.getAccount_no());
             value = stmt.executeUpdate();
         }catch(Exception e){
             System.out.println(e);
         }
         return value;
     }
-    public static int deposite(int customer_id, int account_no, BigDecimal amount){
+    public static int deposite(TransactionInfo info,BigDecimal amount){
         int value=0;
         try{
         sql = "update account_details set balance = ? where customer_id=? and account_no=?";
         stmt = conn.prepareStatement(sql);
         stmt.setBigDecimal(1,amount);
-        stmt.setInt(2,customer_id);
-        stmt.setInt(3,account_no);
+        stmt.setInt(2,info.getCustomer_id());
+        stmt.setInt(3,info.getAccount_no());
         value = stmt.executeUpdate();
     }catch(Exception e){
         System.out.println(e);
     }
         return value;
+    }
+    public static void transInsertion(TransactionInfo info,String type){
+        try {
+            String sql ="";
+            if(type == "withdrawl") {
+                sql = "insert into transaction_details(customer_id,account_no,transaction_type)values(?,?,'Withdraw')";
+            }
+            else {
+                sql = "insert into transaction_details(customer_id,account_no,transaction_type)values(?,?,'Deposite')";
+            }
+            stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            System.out.println();
+            stmt.setInt(1, info.getCustomer_id());
+            stmt.setInt(2, info.getAccount_no());
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            set.next();
+        }catch (Exception e){
+
+        }
     }
 }

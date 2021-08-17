@@ -7,6 +7,16 @@ public class AccountInfo {
 	private int account_no;
 	private BigDecimal balance;
 	private String status;
+	private String branch;
+
+	public String getBranch() {
+		return branch;
+	}
+
+	public void setBranch(String branch) {
+		this.branch = branch;
+	}
+
 	public String getStatus(){
 		return status;
 	}
@@ -33,8 +43,8 @@ public class AccountInfo {
 	}
 	public String toString()
 	{
-		return "--------------------------------------"+"\n"
-				+"Account_no:"+account_no+"  |  "+"Balance:"+ balance+"Status:"+"  |  "+status;
+		return "---------------------------------------------------"+"\n"
+				+"Account_no:"+account_no+"  |  "+"Balance:"+ balance+"  |  "+"Status:"+status;
 	}
 
 }

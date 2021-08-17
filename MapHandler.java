@@ -1,5 +1,6 @@
 package javaDatabaseDemo;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 
 public enum MapHandler {
@@ -27,7 +28,6 @@ public enum MapHandler {
         int customer_id = customer.getCustomerId();
         customerDetailsMap.put(customer_id,customer);
     }
-
     public  HashMap<Integer, CustomerInfo> retriveCustomerDetails() {
         return customerDetailsMap;
     }
@@ -39,6 +39,12 @@ public enum MapHandler {
     }
     public void accountDeletion(int id){
         accountDetailsMap.remove(id);
+    }
+    public void balanceUpdation(TransactionInfo info, BigDecimal totalAmount){
+        HashMap<Integer,HashMap<Integer, AccountInfo>>account = MapHandler.OBJECT.retriveAccountDetails();
+        HashMap<Integer, AccountInfo>update = account.get(info.getCustomer_id());
+        AccountInfo object = update.get(info.getAccount_no());
+        object.setBalance(totalAmount);
     }
 
 }
