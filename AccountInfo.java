@@ -43,8 +43,8 @@ public class AccountInfo {
 	}
 	public String toString()
 	{
-		return "---------------------------------------------------"+"\n"
-				+"Account_no:"+account_no+"  |  "+"Balance:"+ balance+"  |  "+"Status:"+status;
+		return "----------------------------------------------------------"+"\n"
+				+"Account_no:"+account_no+"  |  "+"Balance:"+ balance;
 	}
 
 }

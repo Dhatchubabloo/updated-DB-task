@@ -1,6 +1,6 @@
 package javaDatabaseDemo;
 
-public class CustomerInfo {
+public class CustomerInfo{
 	private String name;
 	private String city;
 	private int customerId;

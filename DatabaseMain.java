@@ -6,8 +6,6 @@ import java.util.*;
 public class DatabaseMain {
 	static Scanner scan = new Scanner(System.in);
 	public static void main(String[] args){
-		Helper.customerDataStore();
-		Helper.accountDataStore();
 		DatabaseMain db = new DatabaseMain();
 		db.execution();
 	}
@@ -22,7 +20,7 @@ public class DatabaseMain {
 		System.out.println("6.Exit");
 		System.out.println("Enter your choice");
 		int choice = scan.nextInt();
-
+		Helper logic = new Helper();
 		switch (choice) {
 			case 1:
 				ArrayList<Object> inputList = new ArrayList();
@@ -33,7 +31,7 @@ public class DatabaseMain {
 					CustomerInfo customerObject = new CustomerInfo();
 					System.out.println("customer details for customer" + i);
 					System.out.println("Enter Name");
-					customerObject.setName(scan.nextLine());
+					customerObject.setName(scan.next());
 					System.out.println("Enter City");
 					customerObject.setCity(scan.next());
 					inputList.add(customerObject);
@@ -47,7 +45,7 @@ public class DatabaseMain {
 					inputList.add(accountObject);
 					scan.nextLine();
 				}
-				HashMap<String,String>insertionStatus = Helper.caseNewUser(inputList,count);
+				HashMap<String,String>insertionStatus = logic.caseNewUser(inputList,count);
 				System.out.println("Insertion status:");
                 for (Map.Entry<String,String> entry : insertionStatus.entrySet())
                     System.out.println( entry.getKey() +
@@ -66,7 +64,7 @@ public class DatabaseMain {
 					in.setBalance(scan.nextBigDecimal());
 					System.out.println("Enter Branch");
 					in.setBranch(scan.next());
-					ArrayList<Integer> accountStatus = Helper.caseExistingUser(in);
+					ArrayList<Integer> accountStatus = logic.caseExistingUser(in);
 					if (accountStatus.get(0) >0)
 						System.out.println("account insertion succcessful");
 					else
@@ -80,22 +78,33 @@ public class DatabaseMain {
 				System.out.println("Enter Valid Customer id:");
 				int mainId = scan.nextInt();
 				if(Helper.idCheck(mainId)){
-					System.out.println(Helper.helperThreeCustomer().get(mainId));
-					HashMap<Integer, AccountInfo> temp = Helper.helperThreeAccount(mainId);
+					System.out.println(logic.helperThreeCustomer().get(mainId));
+					HashMap<Integer, AccountInfo> temp = logic.helperThreeAccount(mainId);
 					System.out.println("1.To check Entire Account");
 					System.out.println("2.To check particular Account");
 					int option = scan.nextInt();
 					switch (option) {
 						case 1:
-						for (AccountInfo ac : temp.values()) {
-							System.out.println(ac);
-						}
-							System.out.println("---------------------------------------------------");
+							if(temp!=null) {
+								for (AccountInfo ac : temp.values()) {
+									System.out.println(ac);
+								}
+								System.out.println("----------------------------------------------------------");
+							}
+							else
+								System.out.println("customer deactivated");
 						break;
 						case 2:
 							System.out.println("Enter valid Account Number");
 							int mainAccount_no = scan.nextInt();
-							System.out.println(temp.get(mainAccount_no));
+							if(Helper.accountCheck(mainId,mainAccount_no)) {
+								if (temp != null)
+									System.out.println(temp.get(mainAccount_no));
+								else
+									System.out.println("account deactivated");
+							}
+							else
+								System.out.println("invalid account number");
 							break;
 						default:
 							System.out.println("invalid option");
@@ -154,11 +163,13 @@ public class DatabaseMain {
 				System.out.println("1.Entire customer_id deletion");
 				System.out.println("2.particular account details deletion");
 				int number = scan.nextInt();
+				AccountInfo accountObject = new AccountInfo();
 				switch (number) {
 					case 1:
+						String type = "customer";
 						System.out.println("Enter customer_id");
-						int customer_id = scan.nextInt();
-						int status=Helper.entireDeletion(customer_id);
+						accountObject.setCustomer_id(scan.nextInt());
+						int status=Helper.entireDeletion(accountObject,type);
 						if(status>0)
 							System.out.println("Deleted Successfully;");
 						else
@@ -167,12 +178,12 @@ public class DatabaseMain {
 						execution();
 						break;
 					case 2:
+						String type1 = "account";
 						System.out.println("Enter customer_id");
-						int value = scan.nextInt();
+						accountObject.setCustomer_id(scan.nextInt());
 						System.out.println("Enter account_no");
-						int account_no = scan.nextInt();
-						int status1 = Helper.particularAccountDeletion(value,account_no);
-						if(status1==1)
+						accountObject.setAccount_no(scan.nextInt());
+						if(Helper.particularAccountDeletion(accountObject,type1))
 							System.out.println("Deleted Successfully;");
 						else
 							System.out.println("Deletion Failed....." +

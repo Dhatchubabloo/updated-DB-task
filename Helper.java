@@ -1,27 +1,40 @@
 package javaDatabaseDemo;
 
+
+import java.io.FileReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.Properties;
 
 public class Helper {
-
-    public static HashMap<Integer, CustomerInfo> customerDataStore() {
+   private static Persistance db = null;
+    public Helper(){
+        try {
+            FileReader reader = new FileReader("dbConnector.properties");
+            Properties props = new Properties();
+            props.load(reader);
+            String path = (String) props.get("dbName");
+            db = (Persistance) Class.forName(path).newInstance();
+            customerDataStore();
+            accountDataStore();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public HashMap<Integer, CustomerInfo> customerDataStore() {
         HashMap<Integer, CustomerInfo>customerDataMap=null;
         try{
-            QueryHandler hand = new QueryHandler();
-            customerDataMap=hand.customerRetrival();
+            customerDataMap=db.customerRetrival();
         }catch(Exception e){
             e.printStackTrace();
         }
         MapHandler.OBJECT.customerMapper(customerDataMap);
         return customerDataMap;
     }
-    public static void accountDataStore() {
+    public void accountDataStore() {
         HashMap<Integer,HashMap<Integer, AccountInfo>>accountDataMap=null;
         try {
-            QueryHandler db = new QueryHandler();
             accountDataMap=db.accountRetrival();
         }catch(Exception e){
             e.printStackTrace();
@@ -29,10 +42,9 @@ public class Helper {
         MapHandler.OBJECT.accountMapper(accountDataMap);
     }
 
-    public static HashMap<String,String> caseNewUser(ArrayList<Object> inputList,int size){
-        QueryHandler customerToken = new QueryHandler();
+    public HashMap<String,String> caseNewUser(ArrayList<Object> inputList,int size){
         HashMap<String,String>insertionStatus = new HashMap();
-        ArrayList<Integer> idList = customerToken.customerInsertion(inputList);
+        ArrayList<Integer> idList = db.customerInsertion(inputList);
         if(inputList.size()==idList.size()) {
             dataInsertion(inputList,size,idList,insertionStatus);
         }
@@ -56,15 +68,14 @@ public class Helper {
             dataInsertion(inputList,size,idList,insertionStatus);
         }
         try{
-            customerToken.customerRetrival();
+            db.customerRetrival();
         }catch(Exception e){
             e.printStackTrace();
         }
         return insertionStatus;
     }
-    public static void dataInsertion(ArrayList<Object> inputList,int size,
+    public void dataInsertion(ArrayList<Object> inputList,int size,
                                      ArrayList<Integer> idList,HashMap<String,String>insertionStatus){
-        QueryHandler accountToken = new QueryHandler();
         int j=0,k=1;
         for (int i =size;i < idList.size(); i++) {
             CustomerInfo customerObject = (CustomerInfo) inputList.get(j);
@@ -73,8 +84,7 @@ public class Helper {
             AccountInfo accountObject = (AccountInfo) inputList.get(k);
             accountObject.setCustomer_id(idList.get(i));
             k+=2;
-            ArrayList<Integer> account_no = accountToken.accountInsertion(accountObject);
-            System.out.println(account_no);
+            ArrayList<Integer> account_no = db.accountInsertion(accountObject);
             if(account_no.get(0)>0) {
                 accountObject.setAccount_no(account_no.get(1));
                 MapHandler.OBJECT.customerMapper(customerObject);
@@ -86,14 +96,11 @@ public class Helper {
                 String item ="Name :"+customerObject.getName()+" customer_id:"+customerObject.getCustomerId();
                 insertionStatus.put(item, "Fail(account details)");
                 int customer_id = customerObject.getCustomerId();
-                QueryHandler1 db = new QueryHandler1();
                 db.customerDeletion(customer_id);
             }
         }
-        TreeMap<String,String>map = new TreeMap<>(insertionStatus);
     }
-    public static ArrayList<Integer> caseExistingUser(AccountInfo in) {
-        QueryHandler db = new QueryHandler();
+    public  ArrayList<Integer> caseExistingUser(AccountInfo in) {
         ArrayList<Integer>accountIdList = db.accountInsertion(in);
         if(accountIdList.get(0)>0) {
             in.setAccount_no(accountIdList.get(1));
@@ -101,27 +108,38 @@ public class Helper {
         }
         return accountIdList;
     }
-    public static int entireDeletion(int id){
-        QueryHandler1 db = new QueryHandler1();
-        int status = db.customerUpdation(id);
-        MapHandler.OBJECT.customerDeletion(id);
-        MapHandler.OBJECT.accountDeletion(id);
+    public static int entireDeletion(AccountInfo info,String type){
+        int status = db.dataUpdation(info,type);
+        MapHandler.OBJECT.customerDeletion(info.getCustomer_id());
+        MapHandler.OBJECT.accountDeletion(info.getCustomer_id());
         return status;
     }
-    public static int particularAccountDeletion(int id,int account_no){
-        QueryHandler1 db = new QueryHandler1();
-        int status = db.accountUpdation(account_no);
+    public static boolean particularAccountDeletion(AccountInfo info,String type){
         HashMap<Integer,HashMap<Integer, AccountInfo>>accountMap =MapHandler.OBJECT.retriveAccountDetails();
-        HashMap<Integer, AccountInfo>inner = accountMap.get(id);
-        inner.remove(account_no);
-        return status;
+        HashMap<Integer, AccountInfo>inner = accountMap.get(info.getCustomer_id());
+        int status=0;
+        if(inner.size()==1) {
+            status = db.dataUpdation(info, "customer");
+        }
+        else
+            status = db.dataUpdation(info, type);
+        if(status==1) {
+            if (inner != null) {
+                inner.remove(info.getAccount_no());
+                return true;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
     }
-    public static boolean amountWithdrawl(TransactionInfo info,String type){
+    public static boolean amountWithdrawl(TransactionInfo info, String type){
         BigDecimal balance = getBalanceAmount(info.getCustomer_id(),info.getAccount_no());
         int rate =balance.compareTo(info.getAmount());
         if(rate>=0) {
             BigDecimal totalAmount = balance.subtract(info.getAmount());
-            int status = QueryHandler1.withdrawl(info, totalAmount);
+            int status = db.transcation(info, totalAmount);
             if(status>0) {
                 Helper.transData(info, type);
                 MapHandler.OBJECT.balanceUpdation(info,totalAmount);
@@ -132,10 +150,10 @@ public class Helper {
         else
             return false;
     }
-    public static boolean amountDeposite(TransactionInfo info,String type){
+    public static boolean amountDeposite(TransactionInfo info, String type){
         BigDecimal balance = getBalanceAmount(info.getCustomer_id(),info.getAccount_no());
         BigDecimal totalAmount = balance.add(info.getAmount());
-        int rate = QueryHandler1.deposite(info,totalAmount);
+        int rate = db.transcation(info,totalAmount);
         if(rate>0){
             Helper.transData(info,type);
             MapHandler.OBJECT.balanceUpdation(info,totalAmount);
@@ -145,7 +163,7 @@ public class Helper {
             return false;
     }
     public static void transData(TransactionInfo info,String type){
-        QueryHandler1.transInsertion(info,type);
+        db.transInsertion(info,type);
     }
     public static BigDecimal getBalanceAmount(int customer_id, int account_no){
         HashMap<Integer,HashMap<Integer, AccountInfo>>finalAccountMap=MapHandler.OBJECT.retriveAccountDetails();
@@ -174,11 +192,11 @@ public class Helper {
         boolean status = qh.closingProcess();
         return status;
     }
-    public static HashMap<Integer, CustomerInfo> helperThreeCustomer(){
+    public HashMap<Integer, CustomerInfo> helperThreeCustomer(){
         HashMap<Integer, CustomerInfo>finalCustomerMap=MapHandler.OBJECT.retriveCustomerDetails();
         return finalCustomerMap;
     }
-    public static  HashMap<Integer, AccountInfo> helperThreeAccount(int id){
+    public HashMap<Integer, AccountInfo> helperThreeAccount(int id){
         HashMap<Integer,HashMap<Integer, AccountInfo>>finalAccountMap=MapHandler.OBJECT.retriveAccountDetails();
         HashMap<Integer, AccountInfo> temp = finalAccountMap.get(id);
             return temp;

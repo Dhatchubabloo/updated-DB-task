@@ -37,7 +37,8 @@ public enum MapHandler {
     public void customerDeletion(int id){
         customerDetailsMap.remove(id);
     }
-    public void accountDeletion(int id){
+    public void accountDeletion(int id)
+    {
         accountDetailsMap.remove(id);
     }
     public void balanceUpdation(TransactionInfo info, BigDecimal totalAmount){
@@ -46,5 +47,4 @@ public enum MapHandler {
         AccountInfo object = update.get(info.getAccount_no());
         object.setBalance(totalAmount);
     }
-
 }
