@@ -8,7 +8,7 @@ public interface Persistance {
 
     ArrayList<Integer> customerInsertion(ArrayList<Object> list);
 
-    HashMap<Integer, CustomerInfo> customerRetrival();
+    HashMap<Integer, CustomerInfo> customerRetrival() throws ExceptionHandling;
 
     ArrayList<Integer> accountInsertion(AccountInfo accountIn);
 
@@ -17,6 +17,10 @@ public interface Persistance {
     int customerDeletion(int id);
 
     int dataUpdation(AccountInfo info,String type);
+
+    void passwordSetter(CustomerInfo info);
+
+    HashMap<Integer,HashMap<Integer, String>> wholeAccountDetails();
 
     int transcation(TransactionInfo info,BigDecimal amount);
 

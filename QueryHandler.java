@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class QueryHandler implements Persistance{
 	
@@ -79,27 +80,29 @@ public class QueryHandler implements Persistance{
 		}
 		return mainList;
 	}
-	public HashMap<Integer, CustomerInfo> customerRetrival() {
+	public HashMap<Integer, CustomerInfo> customerRetrival() throws ExceptionHandling {
 		HashMap<Integer, CustomerInfo> entry =  new HashMap<>();
 		ResultSet custom_rs=null;
 		Statement stmt1 =null;
 		try {
 			stmt1 = conn.createStatement();
-			sql = "select name,city,customer_id from customer_details";
+			sql = "select name,city,customer_id,password from customer_details where customer_status!='Deactivate'";
 			custom_rs = stmt1.executeQuery(sql);
 			while (custom_rs.next()) {
 				Integer id = custom_rs.getInt("customer_id");
 				String name = custom_rs.getString("name");
 				String city = custom_rs.getString("city");
+				String password = custom_rs.getString("password");
 				CustomerInfo input = new CustomerInfo();
 				input.setCity(city);
 				input.setName(name);
 				input.setCustomerId(id);
+				input.setPassword(password);
 				entry.put(id, input);
 			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
+			throw new ExceptionHandling("There is no data for the customer");
 		}finally {
 			try{
 			custom_rs.close();
@@ -187,6 +190,51 @@ public class QueryHandler implements Persistance{
 		}
 		return outer;
 	}
+	public HashMap<Integer,HashMap<Integer, String>> wholeAccountDetails() {
+		HashMap<Integer,HashMap<Integer, String>> outer =new HashMap();
+		ResultSet account_rs = null;
+		Statement stmt=null;
+		try {
+			stmt = conn.createStatement();
+			sql = "select * from account_details";
+			account_rs = stmt.executeQuery(sql);
+
+			while(account_rs.next()) {
+				Integer customer_id = account_rs.getInt("customer_id");
+				Integer account_no = account_rs.getInt("account_no");
+				BigDecimal balance = account_rs.getBigDecimal("balance");
+				String status = account_rs.getString("account_status");
+				AccountInfo accounts = new AccountInfo();
+				accounts.setCustomer_id(customer_id);
+				accounts.setAccount_no(account_no);
+				accounts.setBalance(balance);
+				accounts.setStatus(status);
+				HashMap<Integer, String>inner  = outer.getOrDefault(customer_id,new HashMap<>());
+				inner.put(account_no,status);
+				outer.put(customer_id, inner);
+			}
+			for(Map.Entry<Integer,HashMap<Integer,String >> entry: outer.entrySet()){
+				System.out.println(entry.getKey()+"="+entry.getValue());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				account_rs.close();
+				stmt.close();
+			}catch(Exception e){}
+		}
+		return outer;
+	}
+
+//	public static void main(String[] args) {
+//		QueryHandler db = new QueryHandler();
+//		db.wholeAccountDetails();
+//	}
+	public void deactiveCustomer(){
+		String sql = "select * from customer_details where ";
+	}
 	public int customerDeletion(int id){
 		int status=0;
 		try{
@@ -250,6 +298,22 @@ public class QueryHandler implements Persistance{
 			}catch(Exception e){}
 		}
 		return value;
+	}
+	public void passwordSetter(CustomerInfo info){
+		try {
+			sql = "update customer_details set password = ? where customer_id=?";
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1,info.getPassword());
+			stmt.setInt(2,info.getCustomerId());
+			stmt.executeUpdate();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		finally {
+			try{
+				stmt.close();
+			}catch(Exception e){}
+		}
 	}
 	public  void transInsertion(TransactionInfo info,String type){
 		try {

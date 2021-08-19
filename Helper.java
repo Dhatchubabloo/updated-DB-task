@@ -16,18 +16,16 @@ public class Helper {
             props.load(reader);
             String path = (String) props.get("dbName");
             db = (Persistance) Class.forName(path).newInstance();
-            customerDataStore();
-            accountDataStore();
         }catch (Exception e){
             e.printStackTrace();
         }
     }
-    public HashMap<Integer, CustomerInfo> customerDataStore() {
-        HashMap<Integer, CustomerInfo>customerDataMap=null;
+    public HashMap<Integer, CustomerInfo> customerDataStore() throws Exception{
+        HashMap<Integer, CustomerInfo>customerDataMap;
         try{
             customerDataMap=db.customerRetrival();
         }catch(Exception e){
-            e.printStackTrace();
+           throw new ExceptionHandling("");
         }
         MapHandler.OBJECT.customerMapper(customerDataMap);
         return customerDataMap;
@@ -41,7 +39,18 @@ public class Helper {
         }
         MapHandler.OBJECT.accountMapper(accountDataMap);
     }
-
+    public HashMap<Integer,HashMap<Integer, String>> wholeDataCheck(){
+        HashMap<Integer,HashMap<Integer, String>> wholeMap =db.wholeAccountDetails();
+        return wholeMap;
+    }
+    public boolean wholeAccountCheck(int id,int account_no){
+        HashMap<Integer,HashMap<Integer, String>>accountMap = wholeDataCheck();
+        HashMap<Integer, String> accountNumberMap =accountMap.get(id);
+        if(accountNumberMap.containsKey(account_no))
+            return true;
+        else
+            return false;
+    }
     public HashMap<String,String> caseNewUser(ArrayList<Object> inputList,int size){
         HashMap<String,String>insertionStatus = new HashMap();
         ArrayList<Integer> idList = db.customerInsertion(inputList);
@@ -108,7 +117,7 @@ public class Helper {
         }
         return accountIdList;
     }
-    public static int entireDeletion(AccountInfo info,String type){
+    public  int entireDeletion(AccountInfo info,String type){
         int status = db.dataUpdation(info,type);
         MapHandler.OBJECT.customerDeletion(info.getCustomer_id());
         MapHandler.OBJECT.accountDeletion(info.getCustomer_id());
@@ -133,6 +142,10 @@ public class Helper {
         }
         else
             return false;
+    }
+    public void password(CustomerInfo info){
+        db.passwordSetter(info);
+
     }
     public static boolean amountWithdrawl(TransactionInfo info, String type){
         BigDecimal balance = getBalanceAmount(info.getCustomer_id(),info.getAccount_no());

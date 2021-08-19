@@ -6,6 +6,13 @@ import java.util.*;
 public class DatabaseMain {
 	static Scanner scan = new Scanner(System.in);
 	public static void main(String[] args){
+		Helper logic = new Helper();
+		try {
+			logic.customerDataStore();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		logic.accountDataStore();
 		DatabaseMain db = new DatabaseMain();
 		db.execution();
 	}
@@ -34,6 +41,8 @@ public class DatabaseMain {
 					customerObject.setName(scan.next());
 					System.out.println("Enter City");
 					customerObject.setCity(scan.next());
+					System.out.println("Enter Password");
+					customerObject.setPassword(scan.next());
 					inputList.add(customerObject);
 					scan.nextLine();
 					System.out.println("Account details for customer" + i);
@@ -66,7 +75,7 @@ public class DatabaseMain {
 					in.setBranch(scan.next());
 					ArrayList<Integer> accountStatus = logic.caseExistingUser(in);
 					if (accountStatus.get(0) >0)
-						System.out.println("account insertion succcessful");
+						System.out.println("account insertion successful");
 					else
 						System.out.println("Account insertion Failed");
 				}else
@@ -76,40 +85,64 @@ public class DatabaseMain {
 
 			case 3:
 				System.out.println("Enter Valid Customer id:");
-				int mainId = scan.nextInt();
-				if(Helper.idCheck(mainId)){
-					System.out.println(logic.helperThreeCustomer().get(mainId));
-					HashMap<Integer, AccountInfo> temp = logic.helperThreeAccount(mainId);
-					System.out.println("1.To check Entire Account");
-					System.out.println("2.To check particular Account");
-					int option = scan.nextInt();
-					switch (option) {
-						case 1:
-							if(temp!=null) {
-								for (AccountInfo ac : temp.values()) {
-									System.out.println(ac);
-								}
-								System.out.println("----------------------------------------------------------");
+					int mainId = scan.nextInt();
+					if (Helper.idCheck(mainId)) {
+						System.out.println("Enter Password");
+						String password = scan.next();
+						CustomerInfo info = logic.helperThreeCustomer().get(mainId);
+						String existPassword = info.getPassword();
+						System.out.println(existPassword);
+						if(password.equals(existPassword)) {
+							System.out.println(logic.helperThreeCustomer().get(mainId));
+							HashMap<Integer, AccountInfo> temp = logic.helperThreeAccount(mainId);
+							System.out.println("1.To check Entire Account");
+							System.out.println("2.To check particular Account");
+							int option = scan.nextInt();
+							switch (option) {
+								case 1:
+									if (temp != null) {
+										for (AccountInfo ac : temp.values()) {
+											System.out.println(ac);
+										}
+										System.out.println("----------------------------------------------------------");
+									}
+									break;
+								case 2:
+									System.out.println("Enter valid Account Number");
+									int mainAccount_no = scan.nextInt();
+									if (Helper.accountCheck(mainId, mainAccount_no)) {
+										if (temp != null)
+											System.out.println(temp.get(mainAccount_no));
+										else
+											System.out.println("account deactivated");
+									} else
+										System.out.println("invalid account number");
+									break;
+								default:
+									System.out.println("invalid option");
+									break;
 							}
-							else
-								System.out.println("customer deactivated");
-						break;
-						case 2:
-							System.out.println("Enter valid Account Number");
-							int mainAccount_no = scan.nextInt();
-							if(Helper.accountCheck(mainId,mainAccount_no)) {
-								if (temp != null)
-									System.out.println(temp.get(mainAccount_no));
-								else
-									System.out.println("account deactivated");
+						}
+						else {
+							System.out.println("incorrect password");
+							System.out.println();
+							System.out.println("1.Forgot password");
+							System.out.println("2.Exit");
+							int val = scan.nextInt();
+							if (val == 1) {
+								System.out.println("Enter new password");
+								String newPassword = scan.next();
+								System.out.println("Re-Enter password");
+								String rePassword = scan.next();
+								CustomerInfo obj = new CustomerInfo();
+								if (newPassword.equals(rePassword)) {
+									obj.setCustomerId(mainId);
+									obj.setPassword(newPassword);
+									logic.password(obj);
+								} else
+									System.out.println("Password did not match");
 							}
-							else
-								System.out.println("invalid account number");
-							break;
-						default:
-							System.out.println("invalid option");
-							break;
-					}
+						}
 				}else {
 					System.out.println("invalid Customer id");
 				}
@@ -169,7 +202,7 @@ public class DatabaseMain {
 						String type = "customer";
 						System.out.println("Enter customer_id");
 						accountObject.setCustomer_id(scan.nextInt());
-						int status=Helper.entireDeletion(accountObject,type);
+						int status=logic.entireDeletion(accountObject,type);
 						if(status>0)
 							System.out.println("Deleted Successfully;");
 						else
@@ -191,6 +224,19 @@ public class DatabaseMain {
 						execution();
 				}
 				break;
+
+			case 7:
+				System.out.println("Enter customer Id");
+				AccountInfo info1 = new AccountInfo();
+				int customId = scan.nextInt();
+				if(logic.wholeDataCheck().containsKey(customId)){
+					info1.setCustomer_id(customId);
+					System.out.println("Enter account_no");
+					int accountNo = scan.nextInt();
+					if(logic.wholeAccountCheck(customId,accountNo)){
+
+					}
+				}
 			case 6:
 				if(Helper.dbClose())
 					System.out.println("your Connection was closed successfully");
