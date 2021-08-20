@@ -41,8 +41,9 @@ public enum MapHandler {
     {
         accountDetailsMap.remove(id);
     }
+
     public void balanceUpdation(TransactionInfo info, BigDecimal totalAmount){
-        HashMap<Integer,HashMap<Integer, AccountInfo>>account = MapHandler.OBJECT.retriveAccountDetails();
+        HashMap<Integer,HashMap<Integer, AccountInfo>>account = retriveAccountDetails();
         HashMap<Integer, AccountInfo>update = account.get(info.getCustomer_id());
         AccountInfo object = update.get(info.getAccount_no());
         object.setBalance(totalAmount);

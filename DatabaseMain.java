@@ -24,7 +24,8 @@ public class DatabaseMain {
 		System.out.println("3.Check account details");
 		System.out.println("4.Transaction");
 		System.out.println("5.delete the details");
-		System.out.println("6.Exit");
+		System.out.println("6.Account Activation");
+		System.out.println("7.Exit");
 		System.out.println("Enter your choice");
 		int choice = scan.nextInt();
 		Helper logic = new Helper();
@@ -73,11 +74,8 @@ public class DatabaseMain {
 					in.setBalance(scan.nextBigDecimal());
 					System.out.println("Enter Branch");
 					in.setBranch(scan.next());
-					ArrayList<Integer> accountStatus = logic.caseExistingUser(in);
-					if (accountStatus.get(0) >0)
-						System.out.println("account insertion successful");
-					else
-						System.out.println("Account insertion Failed");
+					String accountStatus = logic.caseExistingUser(in);
+					System.out.println(accountStatus);
 				}else
 					System.out.println("invalid customer_id");
 				execution();
@@ -87,12 +85,12 @@ public class DatabaseMain {
 				System.out.println("Enter Valid Customer id:");
 					int mainId = scan.nextInt();
 					if (Helper.idCheck(mainId)) {
-						System.out.println("Enter Password");
-						String password = scan.next();
-						CustomerInfo info = logic.helperThreeCustomer().get(mainId);
-						String existPassword = info.getPassword();
-						System.out.println(existPassword);
-						if(password.equals(existPassword)) {
+//						System.out.println("Enter Password");
+//						String password = scan.next();
+//						CustomerInfo info = logic.helperThreeCustomer().get(mainId);
+//						String existPassword = info.getPassword();
+//						System.out.println(existPassword);
+//						if(password.equals(existPassword)) {
 							System.out.println(logic.helperThreeCustomer().get(mainId));
 							HashMap<Integer, AccountInfo> temp = logic.helperThreeAccount(mainId);
 							System.out.println("1.To check Entire Account");
@@ -111,38 +109,38 @@ public class DatabaseMain {
 									System.out.println("Enter valid Account Number");
 									int mainAccount_no = scan.nextInt();
 									if (Helper.accountCheck(mainId, mainAccount_no)) {
-										if (temp != null)
+										if (temp != null) {
 											System.out.println(temp.get(mainAccount_no));
-										else
-											System.out.println("account deactivated");
+											System.out.println("----------------------------------------------------------");
+										}
 									} else
 										System.out.println("invalid account number");
 									break;
 								default:
 									System.out.println("invalid option");
 									break;
-							}
+							//}
 						}
-						else {
-							System.out.println("incorrect password");
-							System.out.println();
-							System.out.println("1.Forgot password");
-							System.out.println("2.Exit");
-							int val = scan.nextInt();
-							if (val == 1) {
-								System.out.println("Enter new password");
-								String newPassword = scan.next();
-								System.out.println("Re-Enter password");
-								String rePassword = scan.next();
-								CustomerInfo obj = new CustomerInfo();
-								if (newPassword.equals(rePassword)) {
-									obj.setCustomerId(mainId);
-									obj.setPassword(newPassword);
-									logic.password(obj);
-								} else
-									System.out.println("Password did not match");
-							}
-						}
+//						else {
+//							System.out.println("incorrect password");
+//							System.out.println();
+//							System.out.println("1.Forgot password");
+//							System.out.println("2.Exit");
+//							int val = scan.nextInt();
+//							if (val == 1) {
+//								System.out.println("Enter new password");
+//								String newPassword = scan.next();
+//								System.out.println("Re-Enter password");
+//								String rePassword = scan.next();
+//								CustomerInfo obj = new CustomerInfo();
+//								if (newPassword.equals(rePassword)) {
+//									obj.setCustomerId(mainId);
+//									obj.setPassword(newPassword);
+//									logic.password(obj);
+//								} else
+//									System.out.println("Password did not match");
+//							}
+						//}
 				}else {
 					System.out.println("invalid Customer id");
 				}
@@ -167,22 +165,18 @@ public class DatabaseMain {
 								System.out.println("Enter withdrawl amount");
 								BigDecimal wamount = scan.nextBigDecimal();
 								info.setAmount(wamount);
-								boolean condition = Helper.amountWithdrawl(info,type);
-								if (condition) {
-									System.out.println("transaction completed");
-								}
-								else
-									System.out.println("Insufficient amount");
+								String condition = Helper.amountWithdrawl(info,type);
+								System.out.println(condition);
 								break;
 							case 2:
 								String type1 = "deposite";
 								System.out.println("Enter deposite amount");
 								BigDecimal damount = scan.nextBigDecimal();
 								info.setAmount(damount);
-								if (Helper.amountDeposite(info,type1))
-									System.out.println("Deposition completed");
-								else
-									System.out.println("Deposition Failed");
+								String result = Helper.amountDeposite(info,type1);
+								System.out.println(result);
+							default:
+								System.out.println("Invalid Option");
 						}
 					}
 					else
@@ -193,6 +187,8 @@ public class DatabaseMain {
 				execution();
 				break;
 			case 5:
+				System.out.println("Enter customer_id");
+				int identity = scan.nextInt();
 				System.out.println("1.Entire customer_id deletion");
 				System.out.println("2.particular account details deletion");
 				int number = scan.nextInt();
@@ -200,53 +196,86 @@ public class DatabaseMain {
 				switch (number) {
 					case 1:
 						String type = "customer";
-						System.out.println("Enter customer_id");
-						accountObject.setCustomer_id(scan.nextInt());
-						int status=logic.entireDeletion(accountObject,type);
-						if(status>0)
-							System.out.println("Deleted Successfully;");
+						if(Helper.idCheck(identity)) {
+							accountObject.setCustomer_id(identity);
+							String status = logic.entireDeletion(accountObject, type);
+							System.out.println(status);
+						}
 						else
-							System.out.println("Deletion Failed....." +
-									"invalid Customer_id");
+							System.out.println("Invalid customer Id");
 						execution();
 						break;
 					case 2:
-						String type1 = "account";
-						System.out.println("Enter customer_id");
-						accountObject.setCustomer_id(scan.nextInt());
-						System.out.println("Enter account_no");
-						accountObject.setAccount_no(scan.nextInt());
-						if(Helper.particularAccountDeletion(accountObject,type1))
-							System.out.println("Deleted Successfully;");
+						if(Helper.idCheck(identity)) {
+							String type1 = "account";
+							accountObject.setCustomer_id(identity);
+							System.out.println("Enter account_no");
+							int acNo = scan.nextInt();
+							if(Helper.accountCheck(identity,acNo)) {
+								accountObject.setAccount_no(acNo);
+								String status = Helper.particularAccountDeletion(accountObject, type1);
+								System.out.println(status);
+							}
+							else
+								System.out.println("Invalid account number");
+						}
 						else
-							System.out.println("Deletion Failed....." +
-									"invalid Account_no");
-						execution();
+							System.out.println("Invalid customer Id");
+					default:
+						System.out.println("Invalid option");
 				}
+				execution();
 				break;
 
-			case 7:
+			case 6:
 				System.out.println("Enter customer Id");
 				AccountInfo info1 = new AccountInfo();
 				int customId = scan.nextInt();
 				if(logic.wholeDataCheck().containsKey(customId)){
-					info1.setCustomer_id(customId);
-					System.out.println("Enter account_no");
-					int accountNo = scan.nextInt();
-					if(logic.wholeAccountCheck(customId,accountNo)){
-
+					if(Helper.idCheck(customId)) {
+						activation(customId,info1);
 					}
+					else{
+						String status = logic.activateCustomer(customId);
+							System.out.println(status);
+							try {
+								logic.customerDataStore();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							activation(customId, info1);
+						}
 				}
-			case 6:
-				if(Helper.dbClose())
-					System.out.println("your Connection was closed successfully");
 				else
-					System.out.println("Not closed");
+					System.out.println("Invalid customer_id");
+
+				execution();
+				break;
+			case 7:
+				Helper.dbClose();
 				break;
 
 			default:
 				System.out.println("OOPS!.........Enter valid choice");
 				execution();
+		}
+	}
+	public static void activation(int id,AccountInfo info){
+		Helper logic = new Helper();
+		info.setCustomer_id(id);
+		System.out.println("Enter account_no");
+		int accountNo = scan.nextInt();
+		if (logic.wholeAccountCheck(id, accountNo)) {
+			if(Helper.accountCheck(id,accountNo)){
+				System.out.println("your account is already exist and active");
+			}
+			else{
+				String status = (logic.activateAccount(accountNo));
+				System.out.println(status);
+				logic.accountDataStore();
+			}
+		} else {
+			System.out.println("Invalid account number");
 		}
 	}
 }

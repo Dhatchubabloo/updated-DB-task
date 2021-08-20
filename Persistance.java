@@ -14,7 +14,11 @@ public interface Persistance {
 
     HashMap<Integer,HashMap<Integer, AccountInfo>> accountRetrival();
 
-    int customerDeletion(int id);
+    void customerDeletion(int id);
+
+    int customerActivation(int id);
+
+    int accountActivation(int account_no);
 
     int dataUpdation(AccountInfo info,String type);
 

@@ -46,10 +46,7 @@ public class Helper {
     public boolean wholeAccountCheck(int id,int account_no){
         HashMap<Integer,HashMap<Integer, String>>accountMap = wholeDataCheck();
         HashMap<Integer, String> accountNumberMap =accountMap.get(id);
-        if(accountNumberMap.containsKey(account_no))
-            return true;
-        else
-            return false;
+        return accountNumberMap.containsKey(account_no);
     }
     public HashMap<String,String> caseNewUser(ArrayList<Object> inputList,int size){
         HashMap<String,String>insertionStatus = new HashMap();
@@ -109,21 +106,42 @@ public class Helper {
             }
         }
     }
-    public  ArrayList<Integer> caseExistingUser(AccountInfo in) {
+    public  String caseExistingUser(AccountInfo in) {
         ArrayList<Integer>accountIdList = db.accountInsertion(in);
         if(accountIdList.get(0)>0) {
             in.setAccount_no(accountIdList.get(1));
             MapHandler.OBJECT.accountMapper(in);
         }
-        return accountIdList;
+        if (accountIdList.get(0) >0)
+            return "account insertion successful";
+        else
+            return "Account insertion Failed";
     }
-    public  int entireDeletion(AccountInfo info,String type){
+    public  String entireDeletion(AccountInfo info,String type){
         int status = db.dataUpdation(info,type);
         MapHandler.OBJECT.customerDeletion(info.getCustomer_id());
         MapHandler.OBJECT.accountDeletion(info.getCustomer_id());
-        return status;
+        if (status > 0)
+            return "Deleted Successfully";
+        else
+            return "Deletion Failed";
     }
-    public static boolean particularAccountDeletion(AccountInfo info,String type){
+    public String activateCustomer(int id){
+        int value=db.customerActivation(id);
+        if(value==1){
+            return "Customer Activated";
+        }
+        else
+            return "customer Activation Failed";
+    }
+    public String activateAccount(int account_no){
+        int value =db.accountActivation(account_no);
+        if(value==1)
+            return "Account Activation successfully";
+        else
+            return "Account Activation Failed";
+    }
+    public static String particularAccountDeletion(AccountInfo info,String type){
         HashMap<Integer,HashMap<Integer, AccountInfo>>accountMap =MapHandler.OBJECT.retriveAccountDetails();
         HashMap<Integer, AccountInfo>inner = accountMap.get(info.getCustomer_id());
         int status=0;
@@ -135,19 +153,19 @@ public class Helper {
         if(status==1) {
             if (inner != null) {
                 inner.remove(info.getAccount_no());
-                return true;
+                return "Deletion Successful";
             }
             else
-                return false;
+                return "Deletion Failed";
         }
         else
-            return false;
+            return "Deletion Failed";
     }
     public void password(CustomerInfo info){
         db.passwordSetter(info);
 
     }
-    public static boolean amountWithdrawl(TransactionInfo info, String type){
+    public static String amountWithdrawl(TransactionInfo info, String type){
         BigDecimal balance = getBalanceAmount(info.getCustomer_id(),info.getAccount_no());
         int rate =balance.compareTo(info.getAmount());
         if(rate>=0) {
@@ -156,24 +174,24 @@ public class Helper {
             if(status>0) {
                 Helper.transData(info, type);
                 MapHandler.OBJECT.balanceUpdation(info,totalAmount);
-                return true;
+                return "Transaction Completed";
             }else
-                return false;
+                return "Transaction Failed...Server Error";
         }
         else
-            return false;
+            return "Insufficien Balace";
     }
-    public static boolean amountDeposite(TransactionInfo info, String type){
+    public static String amountDeposite(TransactionInfo info, String type){
         BigDecimal balance = getBalanceAmount(info.getCustomer_id(),info.getAccount_no());
         BigDecimal totalAmount = balance.add(info.getAmount());
         int rate = db.transcation(info,totalAmount);
         if(rate>0){
             Helper.transData(info,type);
             MapHandler.OBJECT.balanceUpdation(info,totalAmount);
-            return true;
+            return "Transaction Completed ";
         }
         else
-            return false;
+            return "Transaction Failed...Server Error";
     }
     public static void transData(TransactionInfo info,String type){
         db.transInsertion(info,type);
@@ -186,24 +204,25 @@ public class Helper {
         return balance;
     }
     public static boolean idCheck(int id) {
-        if(MapHandler.OBJECT.retriveCustomerDetails().containsKey(id)){
-            return true;
-        }
-        else
-            return false;
+        return MapHandler.OBJECT.retriveCustomerDetails().containsKey(id);
     }
+
     public static boolean accountCheck(int id,int account_no){
         HashMap<Integer,HashMap<Integer, AccountInfo>>finalAccountMap=MapHandler.OBJECT.retriveAccountDetails();
         HashMap<Integer, AccountInfo> temp = finalAccountMap.get(id);
-        if(temp.containsKey(account_no))
-            return true;
-        else
+        if(temp==null){
             return false;
+        }
+        else
+        return temp.containsKey(account_no);
     }
-    public static boolean  dbClose(){
-        QueryHandler qh = new QueryHandler();
-        boolean status = qh.closingProcess();
-        return status;
+    public static String dbClose(){
+        boolean status = db.closingProcess();
+        if(status)
+            return "your Connection was closed successfully";
+        else
+            return "Not closed";
+
     }
     public HashMap<Integer, CustomerInfo> helperThreeCustomer(){
         HashMap<Integer, CustomerInfo>finalCustomerMap=MapHandler.OBJECT.retriveCustomerDetails();

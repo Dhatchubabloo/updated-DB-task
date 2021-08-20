@@ -213,9 +213,6 @@ public class QueryHandler implements Persistance{
 				inner.put(account_no,status);
 				outer.put(customer_id, inner);
 			}
-			for(Map.Entry<Integer,HashMap<Integer,String >> entry: outer.entrySet()){
-				System.out.println(entry.getKey()+"="+entry.getValue());
-			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -227,23 +224,45 @@ public class QueryHandler implements Persistance{
 		}
 		return outer;
 	}
-
-//	public static void main(String[] args) {
-//		QueryHandler db = new QueryHandler();
-//		db.wholeAccountDetails();
-//	}
-	public void deactiveCustomer(){
-		String sql = "select * from customer_details where ";
-	}
-	public int customerDeletion(int id){
-		int status=0;
+	public void customerDeletion(int id){
 		try{
 			sql = "delete from customer_details where customer_id = ?";
 			stmt = conn.prepareStatement(sql);
 			stmt.setInt(1,id);
-			status= stmt.executeUpdate();
+			stmt.executeUpdate();
 		}catch(Exception e) {
 			System.out.println(e);
+		}
+		finally {
+			try {
+				stmt.close();
+			}catch(Exception e){}
+		}
+	}
+	public int customerActivation(int id){
+		int status=0;
+		try{
+			stmt =conn.prepareStatement("update customer_details set customer_status = 'Activate' where customer_id =?");
+			stmt.setInt(1,id);
+			status = stmt.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				stmt.close();
+			}catch(Exception e){}
+		}
+		return status;
+	}
+	public int accountActivation(int account_no){
+		int status=0;
+		try{
+			stmt=conn.prepareStatement("update account_details set account_status='Activate' where account_no=?");
+			stmt.setInt(1,account_no);
+			status = stmt.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		finally {
 			try {
@@ -336,6 +355,13 @@ public class QueryHandler implements Persistance{
 			try {
 				stmt.close();
 			}catch(Exception e){}
+		}
+	}
+	public void statementClose(){
+		try{
+			stmt.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	public boolean closingProcess() {
