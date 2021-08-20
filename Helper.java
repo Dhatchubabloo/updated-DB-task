@@ -20,13 +20,9 @@ public class Helper {
             e.printStackTrace();
         }
     }
-    public HashMap<Integer, CustomerInfo> customerDataStore() throws Exception{
+    public HashMap<Integer, CustomerInfo> customerDataStore() throws ExceptionHandling{
         HashMap<Integer, CustomerInfo>customerDataMap;
-        try{
             customerDataMap=db.customerRetrival();
-        }catch(Exception e){
-           throw new ExceptionHandling("");
-        }
         MapHandler.OBJECT.customerMapper(customerDataMap);
         return customerDataMap;
     }
@@ -39,16 +35,16 @@ public class Helper {
         }
         MapHandler.OBJECT.accountMapper(accountDataMap);
     }
-    public HashMap<Integer,HashMap<Integer, String>> wholeDataCheck(){
+    public HashMap<Integer,HashMap<Integer, String>> wholeDataCheck()throws ExceptionHandling{
         HashMap<Integer,HashMap<Integer, String>> wholeMap =db.wholeAccountDetails();
         return wholeMap;
     }
-    public boolean wholeAccountCheck(int id,int account_no){
+    public boolean wholeAccountCheck(int id,int account_no)throws ExceptionHandling{
         HashMap<Integer,HashMap<Integer, String>>accountMap = wholeDataCheck();
         HashMap<Integer, String> accountNumberMap =accountMap.get(id);
         return accountNumberMap.containsKey(account_no);
     }
-    public HashMap<String,String> caseNewUser(ArrayList<Object> inputList,int size){
+    public HashMap<String,String> caseNewUser(ArrayList<Object> inputList,int size) throws ExceptionHandling {
         HashMap<String,String>insertionStatus = new HashMap();
         ArrayList<Integer> idList = db.customerInsertion(inputList);
         if(inputList.size()==idList.size()) {
@@ -81,7 +77,7 @@ public class Helper {
         return insertionStatus;
     }
     public void dataInsertion(ArrayList<Object> inputList,int size,
-                                     ArrayList<Integer> idList,HashMap<String,String>insertionStatus){
+                                     ArrayList<Integer> idList,HashMap<String,String>insertionStatus) throws ExceptionHandling {
         int j=0,k=1;
         for (int i =size;i < idList.size(); i++) {
             CustomerInfo customerObject = (CustomerInfo) inputList.get(j);
@@ -106,7 +102,7 @@ public class Helper {
             }
         }
     }
-    public  String caseExistingUser(AccountInfo in) {
+    public  String caseExistingUser(AccountInfo in) throws ExceptionHandling {
         ArrayList<Integer>accountIdList = db.accountInsertion(in);
         if(accountIdList.get(0)>0) {
             in.setAccount_no(accountIdList.get(1));
@@ -117,7 +113,7 @@ public class Helper {
         else
             return "Account insertion Failed";
     }
-    public  String entireDeletion(AccountInfo info,String type){
+    public  String entireDeletion(AccountInfo info,String type) throws ExceptionHandling {
         int status = db.dataUpdation(info,type);
         MapHandler.OBJECT.customerDeletion(info.getCustomer_id());
         MapHandler.OBJECT.accountDeletion(info.getCustomer_id());
@@ -126,7 +122,7 @@ public class Helper {
         else
             return "Deletion Failed";
     }
-    public String activateCustomer(int id){
+    public String activateCustomer(int id) throws ExceptionHandling {
         int value=db.customerActivation(id);
         if(value==1){
             return "Customer Activated";
@@ -134,14 +130,14 @@ public class Helper {
         else
             return "customer Activation Failed";
     }
-    public String activateAccount(int account_no){
+    public String activateAccount(int account_no) throws ExceptionHandling {
         int value =db.accountActivation(account_no);
         if(value==1)
             return "Account Activation successfully";
         else
             return "Account Activation Failed";
     }
-    public static String particularAccountDeletion(AccountInfo info,String type){
+    public static String particularAccountDeletion(AccountInfo info,String type) throws ExceptionHandling {
         HashMap<Integer,HashMap<Integer, AccountInfo>>accountMap =MapHandler.OBJECT.retriveAccountDetails();
         HashMap<Integer, AccountInfo>inner = accountMap.get(info.getCustomer_id());
         int status=0;
@@ -163,7 +159,6 @@ public class Helper {
     }
     public void password(CustomerInfo info){
         db.passwordSetter(info);
-
     }
     public static String amountWithdrawl(TransactionInfo info, String type){
         BigDecimal balance = getBalanceAmount(info.getCustomer_id(),info.getAccount_no());
@@ -203,20 +198,25 @@ public class Helper {
         BigDecimal balance = info.getBalance();
         return balance;
     }
-    public static boolean idCheck(int id) {
-        return MapHandler.OBJECT.retriveCustomerDetails().containsKey(id);
+    public static String idCheck(int id) {
+        if(MapHandler.OBJECT.retriveCustomerDetails().containsKey(id))
+            return "valid";
+        else
+            return "Invalid Customer_id";
     }
 
-    public static boolean accountCheck(int id,int account_no){
+    public static String accountCheck(int id,int account_no){
         HashMap<Integer,HashMap<Integer, AccountInfo>>finalAccountMap=MapHandler.OBJECT.retriveAccountDetails();
         HashMap<Integer, AccountInfo> temp = finalAccountMap.get(id);
         if(temp==null){
-            return false;
+            return "Deactivated accountNumber";
         }
-        else
-        return temp.containsKey(account_no);
+        if (temp.containsKey(account_no))
+            return "valid";
+        else return "Invalid Account Number";
+
     }
-    public static String dbClose(){
+    public static String dbClose() throws ExceptionHandling {
         boolean status = db.closingProcess();
         if(status)
             return "your Connection was closed successfully";

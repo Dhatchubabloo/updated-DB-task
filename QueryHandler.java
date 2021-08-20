@@ -24,7 +24,7 @@ public class QueryHandler implements Persistance{
 		return connection;
 	}
 	Connection conn =settings();
-	public ArrayList<Integer> customerInsertion(ArrayList<Object> list){
+	public ArrayList<Integer> customerInsertion(ArrayList<Object> list) throws ExceptionHandling {
 		ArrayList<Object> customerList = list;
 		ArrayList<Integer> mainList = new ArrayList();
 		if(customerList!=null) {
@@ -62,20 +62,14 @@ public class QueryHandler implements Persistance{
 					e.printStackTrace();
 				}
 			} catch (Exception throwables) {
-				throwables.printStackTrace();
+				System.out.println(throwables);
+				throw new ExceptionHandling("The data were Missing..Please Enter the valid data");
 			} finally {
 				try {
 					stmt.close();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-			}
-		}
-		else{
-			try {
-				throw new ExceptionHandling("The data was Missing");
-			}catch (Exception e){
-
 			}
 		}
 		return mainList;
@@ -102,7 +96,7 @@ public class QueryHandler implements Persistance{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new ExceptionHandling("There is no data for the customer");
+			throw new ExceptionHandling("There is some customer data was missing");
 		}finally {
 			try{
 			custom_rs.close();
@@ -112,7 +106,7 @@ public class QueryHandler implements Persistance{
 		return entry;
 	}
 
-	public ArrayList<Integer> accountInsertion(AccountInfo accountIn){
+	public ArrayList<Integer> accountInsertion(AccountInfo accountIn)throws ExceptionHandling{
 		ArrayList<Integer>accountIdList = new ArrayList<>();
 		int accountRate[] = {};
 		try {
@@ -131,7 +125,6 @@ public class QueryHandler implements Persistance{
 				accountIdList.add(set.getInt(1));
 
 		}catch(BatchUpdateException e) {
-			System.out.println(e);
 			accountRate = e.getUpdateCounts();
 			for(int i:accountRate)
 				accountIdList.add(i);
@@ -145,6 +138,7 @@ public class QueryHandler implements Persistance{
 		}
 		catch (Exception ex){
 			System.out.println(ex);
+			throw new ExceptionHandling("The data were Missing..Please Enter the valid data");
 		}
 		finally {
 			try {
@@ -156,7 +150,7 @@ public class QueryHandler implements Persistance{
 		return accountIdList;
 	}
 
-	public HashMap<Integer,HashMap<Integer, AccountInfo>> accountRetrival() {
+	public HashMap<Integer,HashMap<Integer, AccountInfo>> accountRetrival() throws ExceptionHandling{
 		HashMap<Integer,HashMap<Integer, AccountInfo>> outer =new HashMap();
 		ResultSet account_rs = null;
 		Statement stmt=null;
@@ -180,7 +174,7 @@ public class QueryHandler implements Persistance{
 			outer.put(customer_id, inner);
 		}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new ExceptionHandling("There is some account data was missing");
 		}
 		finally {
 			try {
@@ -190,7 +184,7 @@ public class QueryHandler implements Persistance{
 		}
 		return outer;
 	}
-	public HashMap<Integer,HashMap<Integer, String>> wholeAccountDetails() {
+	public HashMap<Integer,HashMap<Integer, String>> wholeAccountDetails() throws ExceptionHandling{
 		HashMap<Integer,HashMap<Integer, String>> outer =new HashMap();
 		ResultSet account_rs = null;
 		Statement stmt=null;
@@ -198,7 +192,6 @@ public class QueryHandler implements Persistance{
 			stmt = conn.createStatement();
 			sql = "select * from account_details";
 			account_rs = stmt.executeQuery(sql);
-
 			while(account_rs.next()) {
 				Integer customer_id = account_rs.getInt("customer_id");
 				Integer account_no = account_rs.getInt("account_no");
@@ -214,7 +207,7 @@ public class QueryHandler implements Persistance{
 				outer.put(customer_id, inner);
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new ExceptionHandling("No data for that account");
 		}
 		finally {
 			try {
@@ -239,14 +232,15 @@ public class QueryHandler implements Persistance{
 			}catch(Exception e){}
 		}
 	}
-	public int customerActivation(int id){
+	public int customerActivation(int id)throws ExceptionHandling{
 		int status=0;
 		try{
 			stmt =conn.prepareStatement("update customer_details set customer_status = 'Activate' where customer_id =?");
 			stmt.setInt(1,id);
 			status = stmt.executeUpdate();
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e);
+			throw new ExceptionHandling("Error occured while Activating the customer...please try again later");
 		}
 		finally {
 			try {
@@ -255,14 +249,15 @@ public class QueryHandler implements Persistance{
 		}
 		return status;
 	}
-	public int accountActivation(int account_no){
+	public int accountActivation(int account_no) throws ExceptionHandling {
 		int status=0;
 		try{
 			stmt=conn.prepareStatement("update account_details set account_status='Activate' where account_no=?");
 			stmt.setInt(1,account_no);
 			status = stmt.executeUpdate();
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e);
+			throw new ExceptionHandling("Error occured while Activating the account...please try again later");
 		}
 		finally {
 			try {
@@ -271,7 +266,7 @@ public class QueryHandler implements Persistance{
 		}
 		return status;
 	}
-	public int dataUpdation(AccountInfo info,String type){
+	public int dataUpdation(AccountInfo info,String type) throws ExceptionHandling {
 		int status=0;
 		try{
 			if(type =="customer") {
@@ -291,6 +286,7 @@ public class QueryHandler implements Persistance{
 			}
 		}catch(Exception e){
 			System.out.println(e);
+			throw new ExceptionHandling("No data found for the customer so could Not update");
 		}
 		finally {
 			try {
@@ -334,7 +330,7 @@ public class QueryHandler implements Persistance{
 			}catch(Exception e){}
 		}
 	}
-	public  void transInsertion(TransactionInfo info,String type){
+	public void transInsertion(TransactionInfo info,String type){
 		try {
 			if(type == "withdrawl") {
 				sql = "insert into transaction_details(customer_id,account_no,transaction_type)values(?,?,'Withdraw')";
@@ -364,7 +360,7 @@ public class QueryHandler implements Persistance{
 			e.printStackTrace();
 		}
 	}
-	public boolean closingProcess() {
+	public boolean closingProcess() throws ExceptionHandling {
 		Connection conn = settings();
 		boolean status = false;
 		try{
@@ -373,6 +369,7 @@ public class QueryHandler implements Persistance{
 				status=true;
 		}catch (Exception e){
 			e.printStackTrace();
+			throw new ExceptionHandling("Error occured while closing your Database Connection...So please check your Connection");
 		}
 		finally {
 			try {
